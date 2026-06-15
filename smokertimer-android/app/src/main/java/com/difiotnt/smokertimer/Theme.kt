@@ -1,16 +1,10 @@
 package com.difiotnt.smokertimer
 
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 
 private val SmokyDark = darkColorScheme(
     primary = Color(0xFF7DD3FC),
@@ -45,16 +39,9 @@ private val SmokyLight = lightColorScheme(
 @Composable
 fun SmokerTimerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val context = LocalContext.current
-    val scheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && context is Activity ->
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        darkTheme -> SmokyDark
-        else -> SmokyLight
-    }
+    val scheme = if (darkTheme) SmokyDark else SmokyLight
 
     androidx.compose.material3.MaterialTheme(
         colorScheme = scheme,

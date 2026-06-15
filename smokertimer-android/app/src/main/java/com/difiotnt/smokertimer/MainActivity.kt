@@ -27,15 +27,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -49,7 +45,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,7 +52,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -128,14 +122,7 @@ private fun SmokingTimerApp(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
-    var nowMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            nowMillis = System.currentTimeMillis()
-            delay(1_000)
-        }
-    }
+    val nowMillis = rememberUiClockTick(60_000L)
 
     val notificationPermissionGranted = derivedNotificationPermissionState(activity)
 
@@ -189,7 +176,7 @@ private fun SmokingTimerApp(
                             snackbarHostState.showSnackbar("Status disimpan lokal di perangkat")
                         }
                     }) {
-                        Icon(Icons.Filled.Notifications, contentDescription = "Info")
+                        Text("i")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -202,15 +189,7 @@ private fun SmokingTimerApp(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.background,
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-                            MaterialTheme.colorScheme.background,
-                        ),
-                    ),
-                )
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues),
         ) {
             LazyColumn(
@@ -339,24 +318,14 @@ private fun HeroCard(
 
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+            containerColor = MaterialTheme.colorScheme.surface,
         ),
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(24.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.28f),
-                            Color.Transparent,
-                        ),
-                    ),
-                )
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
                 text = "Timer & status",
@@ -420,14 +389,14 @@ private fun IntervalCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+            containerColor = MaterialTheme.colorScheme.surface,
         ),
     ) {
         Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text("Atur interval", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -474,14 +443,14 @@ private fun AddEntryCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+            containerColor = MaterialTheme.colorScheme.surface,
         ),
     ) {
         Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text("Catat smoking sekarang", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             OutlinedTextField(
@@ -500,8 +469,6 @@ private fun AddEntryCard(
                 onClick = onSave,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Icon(Icons.Filled.Add, contentDescription = null)
-                Spacer(modifier = Modifier.size(8.dp))
                 Text("Simpan smoking sekarang")
             }
         }
@@ -541,7 +508,7 @@ private fun HistoryHeader(
                 indicator = { _ -> },
                 divider = {},
             ) {
-                HistoryRange.entries.forEachIndexed { index, range ->
+                HistoryRange.entries.forEach { range ->
                     androidx.compose.material3.Tab(
                         selected = selectedRange == range,
                         onClick = { onRangeChange(range) },
@@ -630,21 +597,17 @@ private fun EntryRow(entry: SmokingEntry) {
 private fun EmptyStateCard(range: HistoryRange) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+            containerColor = MaterialTheme.colorScheme.surface,
         ),
     ) {
         Column(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Icon(
-                imageVector = Icons.Filled.Notifications,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-            )
+            Text("•", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
             Text("Belum ada history di tab ${range.label.lowercase(Locale("id", "ID"))}")
             Text(
                 "Setelah kamu menekan tombol simpan, catatan akan muncul di sini.",
@@ -658,16 +621,30 @@ private fun EmptyStateCard(range: HistoryRange) {
 private fun LoadingCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+            containerColor = MaterialTheme.colorScheme.surface,
         ),
     ) {
-        Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Memuat data...", fontWeight = FontWeight.SemiBold)
             Text("Membaca log tersimpan dari penyimpanan lokal.")
         }
     }
+}
+
+@Composable
+private fun rememberUiClockTick(intervalMillis: Long): Long {
+    var nowMillis by remember { mutableStateOf(System.currentTimeMillis()) }
+
+    LaunchedEffect(intervalMillis) {
+        while (true) {
+            nowMillis = System.currentTimeMillis()
+            delay(intervalMillis)
+        }
+    }
+
+    return nowMillis
 }
 
 private fun filterEntries(
